@@ -1,0 +1,35 @@
+.song-card {
+    background-color: #f0f4f8; /* light grey-blue */
+    border: 1px solid #d0e0ea;
+    border-radius: 10px;
+    padding: 16px;
+    margin: 12px;
+    width: 280px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+  }
+  
+  .song-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .cover-img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .fav-btn {
+    background-color: #90caf9; /* light blue */
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .fav-btn:hover {
+    background-color: #64b5f6;
+  }
+  

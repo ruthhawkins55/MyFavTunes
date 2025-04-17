@@ -1,0 +1,39 @@
+.about-page {
+    max-width: 600px;
+    margin: 40px auto;
+    background-color: #f0f4f8;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+    text-align: center;
+    color: #333;
+  }
+  
+  .about-page h2 {
+    color: #0077b6;
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+  
+  .artist-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .artist-list li {
+    background-color: #e0f7fa;
+    color: #01579b;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .about-msg {
+    color: #555;
+    background-color: #fff3cd;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  
