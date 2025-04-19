@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, where, deleteDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD69s09cCYnJ4DUNFaQjWPofmeymkkXiEg",
@@ -20,7 +20,7 @@ const songs = [
     artist: "The Weeknd",
     genre: "Pop",
     album: "After Hours",
-    coverUrl: "https://i.imgur.com/O3ZCpsK.jpg",
+    coverUrl: "/The_Weeknd_-_Blinding_Lights.png", 
     notes: "Energetic and nostalgic"
   },
   {
@@ -28,7 +28,7 @@ const songs = [
     artist: "Taylor Swift",
     genre: "Pop",
     album: "Lover",
-    coverUrl: "https://i.imgur.com/TpUazfG.jpg",
+    coverUrl: "/ab67616d0000b273e787cffec20aa2a396a61647.jpeg", 
     notes: "Top-down driving anthem"
   },
   {
@@ -36,15 +36,15 @@ const songs = [
     artist: "Olivia Rodrigo",
     genre: "Alternative Pop",
     album: "SOUR",
-    coverUrl: "https://i.imgur.com/h1JhC44.jpg",
-    notes: "Breakup energy"
+    coverUrl: "/df830050-4e96-411c-9402-eb13419a1545.avif",
+    notes: ""
   },
   {
     title: "August",
     artist: "Taylor Swift",
     genre: "Indie Folk",
     album: "Folklore",
-    coverUrl: "https://i.imgur.com/YZG48tW.jpg",
+    coverUrl: "/yxnrpl4t5uc51.webp", 
     notes: "Bittersweet and dreamy"
   },
   {
@@ -52,7 +52,7 @@ const songs = [
     artist: "Taylor Swift",
     genre: "Folk",
     album: "Evermore",
-    coverUrl: "https://i.imgur.com/J5bEJ4v.jpg",
+    coverUrl: "/images.jpeg",
     notes: "Haunting and emotional"
   },
   {
@@ -60,7 +60,7 @@ const songs = [
     artist: "Frank Ocean",
     genre: "R&B",
     album: "Channel Orange",
-    coverUrl: "https://i.imgur.com/NKmYZcG.jpg",
+    coverUrl: "/ab67616d0000b273f11f1c4ad183b7fa625f8534.jpeg",
     notes: "Smooth, emotional vocal delivery"
   },
   {
@@ -68,7 +68,7 @@ const songs = [
     artist: "Frank Ocean",
     genre: "R&B",
     album: "Blonde",
-    coverUrl: "https://i.imgur.com/CU44Od1.jpg",
+    coverUrl: "/ab67616d0000b273c5649add07ed3720be9d5526.jpeg",
     notes: "Gentle and uplifting"
   },
   {
@@ -76,7 +76,7 @@ const songs = [
     artist: "Hailee Steinfeld",
     genre: "Pop",
     album: "Most Girls - Single",
-    coverUrl: "https://i.imgur.com/nIYaAnu.jpg",
+    coverUrl: "/Hailee_Steinfeld_-_Most_Girls_(single_cover).jpg",
     notes: "Empowering pop anthem"
   },
   {
@@ -84,7 +84,7 @@ const songs = [
     artist: "Ariana Grande",
     genre: "Pop",
     album: "Dangerous Woman",
-    coverUrl: "https://i.imgur.com/NJ8lpN5.jpg",
+    coverUrl: "/Ariana_Grande_-_Dangerous_Woman_(Official_Album_Cover).png",
     notes: "Electrifying and sultry"
   },
   {
@@ -92,7 +92,7 @@ const songs = [
     artist: "Daft Punk",
     genre: "Electronic",
     album: "Discovery",
-    coverUrl: "https://i.imgur.com/YPZ5VDu.jpg",
+    coverUrl: "/One_More_Time.webp",
     notes: "Futuristic dance floor classic"
   },
   {
@@ -100,7 +100,7 @@ const songs = [
     artist: "Chris Brown",
     genre: "Hip-Hop/R&B",
     album: "X",
-    coverUrl: "https://i.imgur.com/5J3r3wa.jpg",
+    coverUrl: "/500x500.jpg",
     notes: "Club hit"
   },
   {
@@ -108,16 +108,59 @@ const songs = [
     artist: "Clairo",
     genre: "Bedroom Pop",
     album: "Immunity",
-    coverUrl: "https://i.imgur.com/U5u6zIW.jpg",
+    coverUrl: "/ab67616d0000b27333ccb60f9b2785ef691b2fbc.jpeg",
     notes: "Tender and raw"
   }
 ];
 
 const uploadSongs = async () => {
   for (const song of songs) {
-    await addDoc(collection(db, "songs"), song);
-    console.log(`Uploaded: ${song.title}`);
+    const q = query(collection(db, "songs"), where("title", "==", song.title));
+    const existingSongs = await getDocs(q);
+
+    if (!existingSongs.empty) {
+      // Update the existing song
+      const songDoc = existingSongs.docs[0].ref;
+      await updateDoc(songDoc, song);
+      console.log(`Updated: ${song.title}`);
+    } else {
+      // Add a new song
+      await addDoc(collection(db, "songs"), song);
+      console.log(`Uploaded: ${song.title}`);
+    }
+  }
+};
+
+const removeDuplicateSongs = async () => {
+  const q = query(collection(db, "songs"), where("title", "==", "August"));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.docs.length > 1) {
+    // Keep the first entry and delete the rest
+    for (let i = 1; i < snapshot.docs.length; i++) {
+      await deleteDoc(snapshot.docs[i].ref);
+      console.log(`Deleted duplicate: ${snapshot.docs[i].id}`);
+    }
+  }
+};
+
+const removeAllDuplicates = async () => {
+  const snapshot = await getDocs(collection(db, "songs"));
+  const seenTitles = new Set();
+
+  for (const doc of snapshot.docs) {
+    const song = doc.data();
+    if (seenTitles.has(song.title)) {
+      // Delete duplicate entry
+      await deleteDoc(doc.ref);
+      console.log(`Deleted duplicate: ${song.title}`);
+    } else {
+      // Add title to the set
+      seenTitles.add(song.title);
+    }
   }
 };
 
 uploadSongs();
+removeDuplicateSongs();
+removeAllDuplicates();

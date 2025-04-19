@@ -1,51 +1,45 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, doc, getDoc, query, where } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig.js";
-import "./About.css";
+import "./NotesPage.css";
+import SongCard from "../SongCard.js";
 
-function About({ user }) {
-  const [favoriteArtists, setFavoriteArtists] = useState([]);
+function NotesPage({ user }) {
+  const [songs, setSongs] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) return;
-
-    const fetchArtists = async () => {
-      const q = query(collection(db, "favorites"), where("userId", "==", user.uid));
-      const favSnapshot = await getDocs(q);
-      const songIds = favSnapshot.docs.map(doc => doc.data().songId);
-
-      const artists = new Set();
-
-      for (let id of songIds) {
-        const songDoc = await getDoc(doc(db, "songs", id));
-        const data = songDoc.data();
-        if (data?.artist) {
-          artists.add(data.artist);
-        }
-      }
-
-      setFavoriteArtists(Array.from(artists));
+    const fetchSongs = async () => {
+      const snapshot = await getDocs(collection(db, "songs"));
+      const songList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setSongs(songList);
     };
 
-    fetchArtists();
-  }, [user]);
+    fetchSongs();
+  }, []);
 
-  if (!user) return <p className="about-msg">Please log in to view your favorite artists.</p>;
+  const handleNotebookClick = (songId) => {
+    navigate(`/notes/${songId}`);
+  };
+
+  if (!user) return <p>Please log in to access your notes.</p>;
 
   return (
-    <div className="about-page">
-      <h2>Your Favorite Artists 🎧</h2>
-      {favoriteArtists.length > 0 ? (
-        <ul className="artist-list">
-          {favoriteArtists.map((artist, idx) => (
-            <li key={idx}>{artist}</li>
-          ))}
-        </ul>
-      ) : (
-        <p className="about-msg">You haven’t favorited any songs yet.</p>
-      )}
+    <div className="notes-page">
+      <h2>Your Song Notes</h2>
+      <div className="song-grid">
+        {songs.map(song => (
+          <div key={song.id} className="song-card-wrapper">
+            <SongCard
+              song={song}
+              onNotebookClick={() => handleNotebookClick(song.id)}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-export default About;
+export default NotesPage;
